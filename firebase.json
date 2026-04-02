@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/commits",
+        "destination": "/commits"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
