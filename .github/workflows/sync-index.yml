@@ -26,9 +26,9 @@ jobs:
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['sha'])" \
             > public/commits
 
-      - name: Strip ads
+      - name: Write strip script
         run: |
-          python3 - <<'EOF'
+          cat > strip.py << 'PYEOF'
           import re
 
           with open("public/index.html", "r", encoding="utf-8") as f:
@@ -57,11 +57,32 @@ jobs:
           html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
           html = re.sub(r'<script>\s*window\.dataLayer.*?gtag\(\'config\'[^)]*\);\s*</script>', '', html, flags=re.DOTALL)
 
+          # Patch openGame to strip ads/popups from game HTML at load time
+          patch = """
+              // Strip ads injected inside game HTML
+              h = h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\\s\\S]*?<\\/div>\\s*<\\/div>/gi, '');
+              h = h.replace(/<style>[^<]*#sidebarad[\\s\\S]*?<\\/style>/gi, '');
+              h = h.replace(/<script[^>]*googletagmanager[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script>[\\s\\S]*?gtag\\([\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script[^>]*eduplace\\.net[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script[^>]*invoke\\.js[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              f.contentDocument.open();
+              f.contentDocument.write(h);
+              f.contentDocument.close();"""
+
+          html = html.replace(
+              "f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();",
+              patch
+          )
+
           with open("public/index.html", "w", encoding="utf-8") as f:
               f.write(html)
 
           print("Ad removal complete.")
-          EOF
+          PYEOF
+
+      - name: Strip ads
+        run: python3 strip.py
 
       - name: Commit if changed
         run: |
