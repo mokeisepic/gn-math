@@ -27,74 +27,35 @@ jobs:
           echo "$HASH" > public/commits
           echo "Using hash: $HASH"
 
-      - name: Write strip script
+      - name: Strip ads and Fix JS
         run: |
-          cat > strip.py << 'PYEOF'
+          python3 - << 'EOF'
           import re
-          import os
 
-          path = "public/index.html"
-          with open(path, "r", encoding="utf-8") as f:
+          with open("public/index.html", "r", encoding="utf-8") as f:
               html = f.read()
 
-          # 1. Strip static ad elements and tracking meta tags
+          # 1. Remove Static Ad Elements
           html = re.sub(r'<div\s+data-ad="[^"]*"[^>]*>.*?</div>', '', html, flags=re.DOTALL)
           html = re.sub(r'<meta\s+name="(google-adsense-account|monetag|ppck-ver|clckd|netpub_[^"]*)"[^>]*>', '', html)
+          html = re.sub(r'<script\s+src="[^"]*(googletagmanager|monetag|js\.rev\.iq|invoke\.js|eduplace\.net)[^"]*"[^>]*></script>', '', html)
 
-          # 2. Remove the specific rev.iq script and analytics
-          html = re.sub(r'<script\s+src="//js\.rev\.iq/[^"]*"></script>', '', html)
-          html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
+          # 2. Inject the Global Cleaner (Wrapped in a single line to prevent YAML/Shell breaks)
+          # This handles downloads and new tabs safely.
+          strip_js = '<script>window.cleanHTML=function(h){if(typeof h!=="string")return h;h=h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\\s\\S]*?<\\/script>/gi,"");h=h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\\s\\S]*?<\\/div>/gi,"");h=h.replace(/<style>[^<]*#sidebarad[\\s\\S]*?<\\/style>/gi,"");return h;};(function(){const O=window.Blob;window.Blob=function(c,o){if(o&&o.type==="text/html"&&Array.isArray(c)){c=c.map(p=>typeof p==="string"?window.cleanHTML(p):p)}return new O(c,o)};const w=document.write;document.write=function(h){w.apply(this,[window.cleanHTML(h)])}})();</script>'
+          
+          html = html.replace('<head>', '<head>' + strip_js)
 
-          # 3. The "Power Stripper" JS Injection
-          # This handles: New Tabs, Iframes, and Download Blobs
-          strip_js = """
-          <script>
-          (function() {
-              window.cleanHTML = function(h) {
-                  if (typeof h !== 'string') return h;
-                  // Strip scripts from known ad providers
-                  h = h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\\s\\S]*?<\\/script>/gi, '');
-                  // Strip ad containers/styles
-                  h = h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\\s\\S]*?<\\/div>/gi, '');
-                  h = h.replace(/<style>[^<]*#sidebarad[\\s\\S]*?<\\/style>/gi, '');
-                  return h;
-              };
-
-              // Proxy the Blob constructor for ad-free downloads
-              const OldBlob = window.Blob;
-              window.Blob = function(content, options) {
-                  if (options && options.type === 'text/html' && Array.isArray(content)) {
-                      content = content.map(part => typeof part === 'string' ? window.cleanHTML(part) : part);
-                  }
-                  return new OldBlob(content, options);
-              };
-
-              // Proxy document.write to catch iframes/new tabs
-              const oldWrite = document.write;
-              document.write = function(h) {
-                  oldWrite.apply(this, [window.cleanHTML(h)]);
-              };
-          })();
-          </script>
-          """
-          # Inject after head
-          html = html.replace('<head>', '<head>\n' + strip_js)
-
-          # 4. Flexible JS Patching
-          # Wrap .write() calls (e.g. document.write(h) -> document.write(window.cleanHTML(h)))
-          html = re.sub(r'(\.document\.write\()([a-zA-Z0-9]+)(\))', r'\1window.cleanHTML(\2)\3', html)
-
-          # Patch the Fetch -> Blob sequence used in downloads
+          # 3. Secure Patching (Only replaces exact functional patterns to avoid 404s)
+          # Matches .write(h) or .write(hh) safely
+          html = re.sub(r'\.write\(([a-zA-Z0-9]+)\)', r'.write(window.cleanHTML(\1))', html)
+          
+          # Matches the specific Blob download pattern in your file
           html = html.replace('new Blob([t]', 'new Blob([window.cleanHTML(t)]')
 
-          with open(path, "w", encoding="utf-8") as f:
+          with open("public/index.html", "w", encoding="utf-8") as f:
               f.write(html)
-
-          print("Ad removal and JS injection complete.")
-          PYEOF
-
-      - name: Strip ads
-        run: python3 strip.py
+          EOF
 
       - name: Commit if changed
         run: |
