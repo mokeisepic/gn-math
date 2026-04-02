@@ -20,6 +20,12 @@ jobs:
           mkdir -p public
           curl -fsSL "https://www.gn-math.dev/" -o public/index.html
 
+      - name: Fetch latest commit hash
+        run: |
+          curl -s "https://api.github.com/repos/gn-math/html/commits?per_page=1" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['sha'])" \
+            > public/commits
+
       - name: Strip ads
         run: |
           python3 - <<'EOF'
@@ -61,7 +67,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/index.html
+          git add public/index.html public/commits
           if git diff --cached --quiet; then
             echo "No changes — skipping commit."
           else
