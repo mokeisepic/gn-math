@@ -1,0 +1,70 @@
+name: Sync index.html
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Fetch latest index.html
+        run: |
+          mkdir -p public
+          curl -fsSL "https://www.gn-math.dev/" -o public/index.html
+
+      - name: Strip ads
+        run: |
+          python3 - <<'EOF'
+          import re
+
+          with open("public/index.html", "r", encoding="utf-8") as f:
+              html = f.read()
+
+          # Remove <div data-ad="..."></div> tags
+          html = re.sub(r'<div\s+data-ad="[^"]*"[^>]*>.*?</div>', '', html, flags=re.DOTALL)
+
+          # Remove Google AdSense meta tag
+          html = re.sub(r'<meta\s+name="google-adsense-account"[^>]*>', '', html)
+
+          # Remove monetag meta tag
+          html = re.sub(r'<meta\s+name="monetag"[^>]*>', '', html)
+
+          # Remove netpub meta tag
+          html = re.sub(r'<meta\s+name="netpub_[^"]*"[^>]*>', '', html)
+
+          # Remove ppck-ver and clckd meta tags
+          html = re.sub(r'<meta\s+name="(?:ppck-ver|clckd)"[^>]*>', '', html)
+
+          # Remove external ad/tracking scripts (rev.iq, monetag, etc.)
+          html = re.sub(r'<script\s+src="//js\.rev\.iq/[^"]*"[^>]*></script>', '', html)
+          html = re.sub(r'<script\s+src="[^"]*monetag[^"]*"[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+
+          # Remove Google Analytics gtag script tags and inline gtag calls
+          html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
+          html = re.sub(r'<script>\s*window\.dataLayer.*?gtag\(\'config\'[^)]*\);\s*</script>', '', html, flags=re.DOTALL)
+
+          with open("public/index.html", "w", encoding="utf-8") as f:
+              f.write(html)
+
+          print("Ad removal complete.")
+          EOF
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/index.html
+          if git diff --cached --quiet; then
+            echo "No changes — skipping commit."
+          else
+            git commit -m "chore: sync index.html and strip ads [$(date -u '+%Y-%m-%d %H:%M UTC')]"
+            git push
+          fi
