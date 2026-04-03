@@ -2896,49 +2896,16 @@ async function openInAboutBlank() {
     const iframeHtml = `<!DOCTYPE html><html><head><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe><script>
 (function() {
     var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-
-    // Block window.open for ad domains
     var _open = window.open;
     window.open = function(url) {
         if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
         return _open.apply(this, arguments);
     };
-
-    // Block fetch for ad domains
     var _fetch = window.fetch;
     window.fetch = function(url) {
         if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
         return _fetch.apply(this, arguments);
     };
-
-    // Block motion sensor permission requests
-    if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-        window.DeviceMotionEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-    if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
-        window.DeviceOrientationEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-
-    // Watch the iframe for sidebar ads and remove them as they appear
-    var frame = document.getElementById("zoneFrame");
-    if (frame) {
-        frame.addEventListener("load", function() {
-            try {
-                var doc = frame.contentDocument || frame.contentWindow.document;
-                ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                    var el = doc.getElementById(id);
-                    if (el) el.remove();
-                });
-                var obs = new MutationObserver(function() {
-                    ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                        var el = doc.getElementById(id);
-                        if (el) el.remove();
-                    });
-                });
-                obs.observe(doc.body, { childList: true, subtree: true });
-            } catch(e) {}
-        });
-    }
 })();
 </script>
 </body></html>`;
@@ -3068,49 +3035,16 @@ function checkAutoCloak() {
             const buttonPageHtml = `<html><head><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script><script>
 (function() {
     var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-
-    // Block window.open for ad domains
     var _open = window.open;
     window.open = function(url) {
         if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
         return _open.apply(this, arguments);
     };
-
-    // Block fetch for ad domains
     var _fetch = window.fetch;
     window.fetch = function(url) {
         if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
         return _fetch.apply(this, arguments);
     };
-
-    // Block motion sensor permission requests
-    if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-        window.DeviceMotionEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-    if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
-        window.DeviceOrientationEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-
-    // Watch the iframe for sidebar ads and remove them as they appear
-    var frame = document.getElementById("zoneFrame");
-    if (frame) {
-        frame.addEventListener("load", function() {
-            try {
-                var doc = frame.contentDocument || frame.contentWindow.document;
-                ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                    var el = doc.getElementById(id);
-                    if (el) el.remove();
-                });
-                var obs = new MutationObserver(function() {
-                    ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                        var el = doc.getElementById(id);
-                        if (el) el.remove();
-                    });
-                });
-                obs.observe(doc.body, { childList: true, subtree: true });
-            } catch(e) {}
-        });
-    }
 })();
 </script>
 </body></html>`;
@@ -3164,49 +3098,16 @@ if (document.readyState === 'loading') {
 <script>
 (function() {
     var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-
-    // Block window.open for ad domains
     var _open = window.open;
     window.open = function(url) {
         if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
         return _open.apply(this, arguments);
     };
-
-    // Block fetch for ad domains
     var _fetch = window.fetch;
     window.fetch = function(url) {
         if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
         return _fetch.apply(this, arguments);
     };
-
-    // Block motion sensor permission requests
-    if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-        window.DeviceMotionEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-    if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
-        window.DeviceOrientationEvent.requestPermission = function() { return Promise.resolve("denied"); };
-    }
-
-    // Watch the iframe for sidebar ads and remove them as they appear
-    var frame = document.getElementById("zoneFrame");
-    if (frame) {
-        frame.addEventListener("load", function() {
-            try {
-                var doc = frame.contentDocument || frame.contentWindow.document;
-                ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                    var el = doc.getElementById(id);
-                    if (el) el.remove();
-                });
-                var obs = new MutationObserver(function() {
-                    ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                        var el = doc.getElementById(id);
-                        if (el) el.remove();
-                    });
-                });
-                obs.observe(doc.body, { childList: true, subtree: true });
-            } catch(e) {}
-        });
-    }
 })();
 </script>
 </body>
