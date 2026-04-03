@@ -1403,7 +1403,7 @@ All Games
 </div>
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];
+const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/", "eduplace.net", "motorsnag", "invoke.js"];
 function isBlockedDomain(url) {
     try {
         const domain = new URL(url, location.origin).hostname + "/";
@@ -2893,22 +2893,7 @@ async function openInAboutBlank() {
     const faviconUrl = getCloakFavicon();
     const currentUrl = window.location.href;
 
-    const iframeHtml = `<!DOCTYPE html><html><head><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe><script>
-(function() {
-    var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-    var _open = window.open;
-    window.open = function(url) {
-        if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
-        return _open.apply(this, arguments);
-    };
-    var _fetch = window.fetch;
-    window.fetch = function(url) {
-        if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
-        return _fetch.apply(this, arguments);
-    };
-})();
-</script>
-</body></html>`;
+    const iframeHtml = `<!DOCTYPE html><html><head><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe></body></html>`;
 
     win.document.open();
     win.document.write(iframeHtml);
@@ -3032,22 +3017,7 @@ function checkAutoCloak() {
                 .replace(/`/g, '\\`')
                 .replace(/\$/g, '\\$');
             
-            const buttonPageHtml = `<html><head><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script><script>
-(function() {
-    var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-    var _open = window.open;
-    window.open = function(url) {
-        if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
-        return _open.apply(this, arguments);
-    };
-    var _fetch = window.fetch;
-    window.fetch = function(url) {
-        if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
-        return _fetch.apply(this, arguments);
-    };
-})();
-</script>
-</body></html>`;
+            const buttonPageHtml = `<html><head><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script></body></html>`;
             
             const dataUrl = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(buttonPageHtml)));
             const win = window.open(dataUrl, '_blank');
@@ -3094,21 +3064,6 @@ if (document.readyState === 'loading') {
 } else {
     waitForSwiper();
 }
-</script>
-<script>
-(function() {
-    var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-    var _open = window.open;
-    window.open = function(url) {
-        if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
-        return _open.apply(this, arguments);
-    };
-    var _fetch = window.fetch;
-    window.fetch = function(url) {
-        if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
-        return _fetch.apply(this, arguments);
-    };
-})();
 </script>
 </body>
 </html>
