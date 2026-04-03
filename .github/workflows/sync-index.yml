@@ -27,35 +27,85 @@ jobs:
           echo "$HASH" > public/commits
           echo "Using hash: $HASH"
 
-      - name: Strip ads and Fix JS
+      - name: Write strip script
         run: |
-          python3 - << 'EOF'
+          cat > strip.py << 'PYEOF'
           import re
 
           with open("public/index.html", "r", encoding="utf-8") as f:
               html = f.read()
 
-          # 1. Remove Static Ad Elements
+          # Remove <div data-ad="..."></div> tags
           html = re.sub(r'<div\s+data-ad="[^"]*"[^>]*>.*?</div>', '', html, flags=re.DOTALL)
-          html = re.sub(r'<meta\s+name="(google-adsense-account|monetag|ppck-ver|clckd|netpub_[^"]*)"[^>]*>', '', html)
-          html = re.sub(r'<script\s+src="[^"]*(googletagmanager|monetag|js\.rev\.iq|invoke\.js|eduplace\.net)[^"]*"[^>]*></script>', '', html)
 
-          # 2. Inject the Global Cleaner (Wrapped in a single line to prevent YAML/Shell breaks)
-          # This handles downloads and new tabs safely.
-          strip_js = '<script>window.cleanHTML=function(h){if(typeof h!=="string")return h;h=h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\\s\\S]*?<\\/script>/gi,"");h=h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\\s\\S]*?<\\/div>/gi,"");h=h.replace(/<style>[^<]*#sidebarad[\\s\\S]*?<\\/style>/gi,"");return h;};(function(){const O=window.Blob;window.Blob=function(c,o){if(o&&o.type==="text/html"&&Array.isArray(c)){c=c.map(p=>typeof p==="string"?window.cleanHTML(p):p)}return new O(c,o)};const w=document.write;document.write=function(h){w.apply(this,[window.cleanHTML(h)])}})();</script>'
-          
-          html = html.replace('<head>', '<head>' + strip_js)
+          # Remove Google AdSense meta tag
+          html = re.sub(r'<meta\s+name="google-adsense-account"[^>]*>', '', html)
 
-          # 3. Secure Patching (Only replaces exact functional patterns to avoid 404s)
-          # Matches .write(h) or .write(hh) safely
-          html = re.sub(r'\.write\(([a-zA-Z0-9]+)\)', r'.write(window.cleanHTML(\1))', html)
-          
-          # Matches the specific Blob download pattern in your file
-          html = html.replace('new Blob([t]', 'new Blob([window.cleanHTML(t)]')
+          # Remove monetag meta tag
+          html = re.sub(r'<meta\s+name="monetag"[^>]*>', '', html)
+
+          # Remove netpub meta tag
+          html = re.sub(r'<meta\s+name="netpub_[^"]*"[^>]*>', '', html)
+
+          # Remove ppck-ver and clckd meta tags
+          html = re.sub(r'<meta\s+name="(?:ppck-ver|clckd)"[^>]*>', '', html)
+
+          # Remove external ad/tracking scripts (rev.iq, monetag, etc.)
+          html = re.sub(r'<script\s+src="//js\.rev\.iq/[^"]*"[^>]*></script>', '', html)
+          html = re.sub(r'<script\s+src="[^"]*monetag[^"]*"[^>]*>.*?</script>', '', html, flags=re.DOTALL)
+
+          # Remove Google Analytics gtag script tags and inline gtag calls
+          html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
+          html = re.sub(r'<script>\s*window\.dataLayer.*?gtag\(\'config\'[^)]*\);\s*</script>', '', html, flags=re.DOTALL)
+
+          # Shared ad stripping function to inject into the page
+          strip_fn = """
+          function stripGameAds(h) {
+              h = h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\\s\\S]*?<\\/div>\\s*<\\/div>/gi, '');
+              h = h.replace(/<style>[^<]*#sidebarad[\\s\\S]*?<\\/style>/gi, '');
+              h = h.replace(/<script[^>]*googletagmanager[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script>[\\s\\S]*?gtag\\([\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script[^>]*eduplace\\.net[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              h = h.replace(/<script[^>]*invoke\\.js[^>]*>[\\s\\S]*?<\\/script>/gi, '');
+              return h;
+          }"""
+
+          # Inject stripGameAds function before the first function definition
+          html = html.replace(
+              "function isBlockedDomain(url) {",
+              strip_fn + "\n          function isBlockedDomain(url) {"
+          )
+
+          # Patch openGame iframe write
+          html = html.replace(
+              "f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();",
+              "h = stripGameAds(h);\n        f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();"
+          )
+
+          # Patch aboutBlank
+          html = html.replace(
+              "w.document.open();\n                w.document.write(hh);\n                w.document.close();",
+              "hh = stripGameAds(hh);\n                w.document.open();\n                w.document.write(hh);\n                w.document.close();"
+          )
+          html = html.replace(
+              "w.document.open();\n            w.document.write(h);\n            w.document.close();",
+              "h = stripGameAds(h);\n            w.document.open();\n            w.document.write(h);\n            w.document.close();"
+          )
+
+          # Patch downloadZone
+          html = html.replace(
+              "fetch(u).then(r=>r.text()).then(t => {\n        const b = new Blob([t]",
+              "fetch(u).then(r=>r.text()).then(t => {\n        t = stripGameAds(t);\n        const b = new Blob([t]"
+          )
 
           with open("public/index.html", "w", encoding="utf-8") as f:
               f.write(html)
-          EOF
+
+          print("Ad removal complete.")
+          PYEOF
+
+      - name: Strip ads
+        run: python3 strip.py
 
       - name: Commit if changed
         run: |
@@ -68,5 +118,3 @@ jobs:
             git commit -m "chore: sync index.html and strip ads [$(date -u '+%Y-%m-%d %H:%M UTC')]"
             git push
           fi
-
-          
