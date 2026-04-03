@@ -3,7 +3,7 @@
 <script>
 window.sadjgknsdfjg='https://'+window.location.hostname;
 </script>
-<head><script>window.cleanHTML=function(h){if(typeof h!=="string")return h;h=h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\s\S]*?<\/script>/gi,"");h=h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\s\S]*?<\/div>/gi,"");h=h.replace(/<style>[^<]*#sidebarad[\s\S]*?<\/style>/gi,"");return h;};(function(){const O=window.Blob;window.Blob=function(c,o){if(o&&o.type==="text/html"&&Array.isArray(c)){c=c.map(p=>typeof p==="string"?window.cleanHTML(p):p)}return new O(c,o)};const w=document.write;document.write=function(h){w.apply(this,[window.cleanHTML(h)])}})();</script>
+<head>
 <script>
 
 (function(){
@@ -98,12 +98,7 @@ window.sadjgknsdfjg='https://'+window.location.hostname;
     <meta name="twitter:description" content="Play unbl*cked games like Crazy Cattle 3D and DriveMad on GN-Math. Fast, free, no downloads-perfect for school or home.">
     
     
-<script>
-window.dataLayer = window.dataLayer || [];
-function gtag() { dataLayer.push(arguments); }
-gtag('js', new Date());
-gtag('config', 'G-WX5VS54ZDW');
-</script>
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -1409,7 +1404,17 @@ All Games
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
 const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];
-function isBlockedDomain(url) {
+
+function stripGameAds(h) {
+    h = h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\s\S]*?<\/div>\s*<\/div>/gi, '');
+    h = h.replace(/<style>[^<]*#sidebarad[\s\S]*?<\/style>/gi, '');
+    h = h.replace(/<script[^>]*googletagmanager[^>]*>[\s\S]*?<\/script>/gi, '');
+    h = h.replace(/<script>[\s\S]*?gtag\([\s\S]*?<\/script>/gi, '');
+    h = h.replace(/<script[^>]*eduplace\.net[^>]*>[\s\S]*?<\/script>/gi, '');
+    h = h.replace(/<script[^>]*invoke\.js[^>]*>[\s\S]*?<\/script>/gi, '');
+    return h;
+}
+          function isBlockedDomain(url) {
     try {
         const domain = new URL(url, location.origin).hostname + "/";
         return schoolList.some(school => domain.includes(school));
@@ -2117,8 +2122,9 @@ async function openGame(id) {
             const r2 = await fetch(g.url.replace("{COVER_URL}", CONFIG.covers).replace("{HTML_URL}", "https://cdn.jsdelivr.net/gh/gn-math/html@main") + "?t=" + Date.now());
             h = await r2.text();
         }
+        h = stripGameAds(h);
         f.contentDocument.open();
-        f.contentDocument.write(window.cleanHTML(h));
+        f.contentDocument.write(h);
         f.contentDocument.close();
     } catch(e) {
         alert("Load failed");
@@ -2155,13 +2161,15 @@ function aboutBlank() {
     fetch(u).then(r=>r.text()).then(h => {
 	if (h.trim().startsWith("Couldn't find the requested file")) {
             fetch(g.url.replace("{COVER_URL}", CONFIG.covers).replace("{HTML_URL}", "https://cdn.jsdelivr.net/gh/gn-math/html@main") + "?t=" + Date.now()).then(r=>r.text()).then(hh => {
+                hh = stripGameAds(hh);
                 w.document.open();
-                w.document.write(window.cleanHTML(hh));
+                w.document.write(hh);
                 w.document.close();
             });
 	} else {
+            h = stripGameAds(h);
             w.document.open();
-            w.document.write(window.cleanHTML(h));
+            w.document.write(h);
             w.document.close();
 	}
     });
@@ -2171,7 +2179,8 @@ function downloadZone() {
     const g = state.games.find(x => x.id == id);
     const u = resolveUrl(g.url);
     fetch(u).then(r=>r.text()).then(t => {
-        const b = new Blob([window.cleanHTML(t)], {type: "text/html"});
+        t = stripGameAds(t);
+        const b = new Blob([t], {type: "text/html"});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(b);
         a.download = g.name + ".html";
@@ -2898,10 +2907,10 @@ async function openInAboutBlank() {
     const faviconUrl = getCloakFavicon();
     const currentUrl = window.location.href;
 
-    const iframeHtml = `<!DOCTYPE html><html><head><script>window.cleanHTML=function(h){if(typeof h!=="string")return h;h=h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\s\S]*?<\/script>/gi,"");h=h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\s\S]*?<\/div>/gi,"");h=h.replace(/<style>[^<]*#sidebarad[\s\S]*?<\/style>/gi,"");return h;};(function(){const O=window.Blob;window.Blob=function(c,o){if(o&&o.type==="text/html"&&Array.isArray(c)){c=c.map(p=>typeof p==="string"?window.cleanHTML(p):p)}return new O(c,o)};const w=document.write;document.write=function(h){w.apply(this,[window.cleanHTML(h)])}})();</script><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe></body></html>`;
+    const iframeHtml = `<!DOCTYPE html><html><head><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe></body></html>`;
 
     win.document.open();
-    win.document.write(window.cleanHTML(iframeHtml));
+    win.document.write(iframeHtml);
     win.document.close();
 }
 function openInBlobNull() {
@@ -3008,7 +3017,7 @@ function checkAutoCloak() {
                 html = html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi, '');
                 html = html.replace('</head>', `<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"></head>`);
                 
-                win.document.write(window.cleanHTML(html));
+                win.document.write(html);
                 win.document.close();
                 
                 window.location.replace('https://www.google.com');
@@ -3022,7 +3031,7 @@ function checkAutoCloak() {
                 .replace(/`/g, '\\`')
                 .replace(/\$/g, '\\$');
             
-            const buttonPageHtml = `<html><head><script>window.cleanHTML=function(h){if(typeof h!=="string")return h;h=h.replace(/<script[^>]*>(googletagmanager|gtag|monetag|invoke|eduplace|rev\.iq)[\s\S]*?<\/script>/gi,"");h=h.replace(/<div[^>]*id="sidebarad[^"]*"[^>]*>[\s\S]*?<\/div>/gi,"");h=h.replace(/<style>[^<]*#sidebarad[\s\S]*?<\/style>/gi,"");return h;};(function(){const O=window.Blob;window.Blob=function(c,o){if(o&&o.type==="text/html"&&Array.isArray(c)){c=c.map(p=>typeof p==="string"?window.cleanHTML(p):p)}return new O(c,o)};const w=document.write;document.write=function(h){w.apply(this,[window.cleanHTML(h)])}})();</script><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script></body></html>`;
+            const buttonPageHtml = `<html><head><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script></body></html>`;
             
             const dataUrl = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(buttonPageHtml)));
             const win = window.open(dataUrl, '_blank');
