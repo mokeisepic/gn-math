@@ -58,11 +58,24 @@ jobs:
           html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
           html = re.sub(r'<script>\s*window\.dataLayer.*?gtag\(\'config\'[^)]*\);\s*</script>', '', html, flags=re.DOTALL)
 
-          # Block ad/popup domains via the existing schoolList network blocker
-          html = html.replace(
-              'const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/"];',
-              'const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/", "eduplace.net", "motorsnag", "invoke.js"];'
-          )
+          # Inject ad blocker before </body>
+          blocker = """<script>
+          (function() {
+              var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
+              var _open = window.open;
+              window.open = function(url) {
+                  if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
+                  return _open.apply(this, arguments);
+              };
+              var _fetch = window.fetch;
+              window.fetch = function(url) {
+                  if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
+                  return _fetch.apply(this, arguments);
+              };
+          })();
+          </script>"""
+
+          html = html.replace("</body>", blocker + "\n</body>")
 
           with open("public/index.html", "w", encoding="utf-8") as f:
               f.write(html)
