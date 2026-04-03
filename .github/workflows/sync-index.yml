@@ -58,53 +58,20 @@ jobs:
           html = re.sub(r'<script[^>]*src="[^"]*googletagmanager[^"]*"[^>]*></script>', '', html)
           html = re.sub(r'<script>\s*window\.dataLayer.*?gtag\(\'config\'[^)]*\);\s*</script>', '', html, flags=re.DOTALL)
 
-          # Inject ad blocker + sidebar remover + permission blocker before </body>
+          # Inject ad blocker before </body>
           blocker = """<script>
           (function() {
               var blocked = ["eduplace.net", "motorsnag", "invoke.js", "adinplay.com"];
-
-              // Block window.open for ad domains
               var _open = window.open;
               window.open = function(url) {
                   if (url && blocked.some(function(d) { return url.indexOf(d) !== -1; })) return null;
                   return _open.apply(this, arguments);
               };
-
-              // Block fetch for ad domains
               var _fetch = window.fetch;
               window.fetch = function(url) {
                   if (url && blocked.some(function(d) { return String(url).indexOf(d) !== -1; })) return Promise.reject(new Error("Blocked"));
                   return _fetch.apply(this, arguments);
               };
-
-              // Block motion sensor permission requests
-              if (window.DeviceMotionEvent && window.DeviceMotionEvent.requestPermission) {
-                  window.DeviceMotionEvent.requestPermission = function() { return Promise.resolve("denied"); };
-              }
-              if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
-                  window.DeviceOrientationEvent.requestPermission = function() { return Promise.resolve("denied"); };
-              }
-
-              // Watch the iframe for sidebar ads and remove them as they appear
-              var frame = document.getElementById("zoneFrame");
-              if (frame) {
-                  frame.addEventListener("load", function() {
-                      try {
-                          var doc = frame.contentDocument || frame.contentWindow.document;
-                          ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                              var el = doc.getElementById(id);
-                              if (el) el.remove();
-                          });
-                          var obs = new MutationObserver(function() {
-                              ["sidebarad1", "sidebarad2"].forEach(function(id) {
-                                  var el = doc.getElementById(id);
-                                  if (el) el.remove();
-                              });
-                          });
-                          obs.observe(doc.body, { childList: true, subtree: true });
-                      } catch(e) {}
-                  });
-              }
           })();
           </script>"""
 
