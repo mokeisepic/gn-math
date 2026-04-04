@@ -2112,6 +2112,7 @@ async function openGame(id) {
             const r2 = await fetch(g.url.replace("{COVER_URL}", CONFIG.covers).replace("{HTML_URL}", "https://cdn.jsdelivr.net/gh/gn-math/html@main") + "?t=" + Date.now());
             h = await r2.text();
         }
+        h = h.replace(/<div[^>]*id="sidebarad\d+"[^>]*>[\s\S]*?<\/div>/gi, "");
         f.contentDocument.open();
         f.contentDocument.write(h);
         f.contentDocument.close();
