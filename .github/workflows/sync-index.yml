@@ -64,12 +64,18 @@ jobs:
               'const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/", "eduplace.net", "motorsnag", "invoke.js"];'
           )
 
+          # Inject popup blocker as the very first script in <head>
+          # Blocks known ad domains but allows legitimate window.open calls (e.g. open in new tab)
+          early_blocker = '<script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&/(motorsnag|eduplace|invoke\\.js|adinplay)/i.test(u))return null;return o.apply(this,arguments);};})();</script>'
+          html = html.replace('<head>', '<head>' + early_blocker)
+
           # Patch game HTML before writing to iframe:
           # 1. Remove broken sidebarad elements
           # 2. Inject a <base> tag so relative URLs resolve to the correct CDN location
+          # 3. Inject a script to block popups inside the iframe
           html = html.replace(
               'f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();',
-              'h = h.replace(/<div[^>]*id="sidebarad\\d+"[^>]*>[\\s\\S]*?<\\/div>/gi, "");\n        var gameUrl = resolveUrl(g.url);\n        var baseUrl = gameUrl.substring(0, gameUrl.lastIndexOf("/") + 1);\n        if (!h.includes("<base")) { h = h.replace("<head>", "<head><base href=\\"" + baseUrl + "\\">"); }\n        f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();'
+              'h = h.replace(/<div[^>]*id="sidebarad\\d+"[^>]*>[\\s\\S]*?<\\/div>/gi, "");\n        var gameUrl = resolveUrl(g.url);\n        var baseUrl = gameUrl.substring(0, gameUrl.lastIndexOf("/") + 1);\n        if (!h.includes("<base")) { h = h.replace("<head>", "<head><base href=\\"" + baseUrl + "\\">"); }\n        var popupBlocker = \'<script>window.open=function(){return null;};<\\/script>\';\n        h = h.replace("<head>", "<head>" + popupBlocker);\n        f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();'
           )
 
           with open("public/index.html", "w", encoding="utf-8") as f:
