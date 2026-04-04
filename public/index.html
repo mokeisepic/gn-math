@@ -3,7 +3,7 @@
 <script>
 window.sadjgknsdfjg='https://'+window.location.hostname;
 </script>
-<head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&/(motorsnag|eduplace|invoke\.js|adinplay)/i.test(u))return null;return o.apply(this,arguments);};})();</script>
+<head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&u.indexOf("motorsnag")!==-1)return null;return o.apply(this,arguments);};})();</script>
 <script>
 
 (function(){
@@ -2116,8 +2116,6 @@ async function openGame(id) {
         var gameUrl = resolveUrl(g.url);
         var baseUrl = gameUrl.substring(0, gameUrl.lastIndexOf("/") + 1);
         if (!h.includes("<base")) { h = h.replace("<head>", "<head><base href=\"" + baseUrl + "\">"); }
-        var popupBlocker = '<script>window.open=function(){return null;};<\/script>';
-        h = h.replace("<head>", "<head>" + popupBlocker);
         f.contentDocument.open();
         f.contentDocument.write(h);
         f.contentDocument.close();
@@ -2899,7 +2897,7 @@ async function openInAboutBlank() {
     const faviconUrl = getCloakFavicon();
     const currentUrl = window.location.href;
 
-    const iframeHtml = `<!DOCTYPE html><html><head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&/(motorsnag|eduplace|invoke\.js|adinplay)/i.test(u))return null;return o.apply(this,arguments);};})();</script><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe></body></html>`;
+    const iframeHtml = `<!DOCTYPE html><html><head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&u.indexOf("motorsnag")!==-1)return null;return o.apply(this,arguments);};})();</script><title>${cloakTitle}</title><link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><style>*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden}iframe{width:100%;height:100%;border:none;display:block}</style></head><body><iframe src="${currentUrl}"></iframe></body></html>`;
 
     win.document.open();
     win.document.write(iframeHtml);
@@ -3023,7 +3021,7 @@ function checkAutoCloak() {
                 .replace(/`/g, '\\`')
                 .replace(/\$/g, '\\$');
             
-            const buttonPageHtml = `<html><head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&/(motorsnag|eduplace|invoke\.js|adinplay)/i.test(u))return null;return o.apply(this,arguments);};})();</script><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script></body></html>`;
+            const buttonPageHtml = `<html><head><script>(function(){var o=window.open;window.open=function(u,t,f){if(u&&u.indexOf("motorsnag")!==-1)return null;return o.apply(this,arguments);};})();</script><title>Click to Continue</title><style>body{margin:0;display:flex;align-items:center;justify-content:center;height:100vh;background:#0f172a;font-family:Arial,sans-serif}button{padding:1.5rem 3rem;font-size:1.5rem;background:#fc2651;color:#fff;border:none;border-radius:12px;cursor:pointer;font-weight:bold}button:hover{background:#e91e47}</style></head><body><button onclick="openBlob()">Click Here</button><script>function openBlob(){let html=\`${escapedHtml}\`;html=html.replace('<html','<html data-about-blank="true"');html=html.replace('<title>gn-math<\\/title>',\`<title>${cloakTitle}<\\/title>\`);html=html.replace(/favicon\\.png/g,'${faviconUrl}');html=html.replace(/<link[^>]*rel=["']icon["'][^>]*>/gi,'');html=html.replace(/<link[^>]*rel=["']apple-touch-icon["'][^>]*>/gi,'');html=html.replace('<\\/head>',\`<link rel="icon" type="image/x-icon" href="${faviconUrl}"><link rel="shortcut icon" href="${faviconUrl}"><link rel="apple-touch-icon" href="${faviconUrl}"><\\/head>\`);const blob=new Blob([html],{type:'text/html'});const blobUrl=URL.createObjectURL(blob);window.open(blobUrl,'_blank');window.close();if(opener)opener.location.replace('https://www.google.com');}<\\/script></body></html>`;
             
             const dataUrl = 'data:text/html;base64,' + btoa(unescape(encodeURIComponent(buttonPageHtml)));
             const win = window.open(dataUrl, '_blank');
