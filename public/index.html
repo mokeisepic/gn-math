@@ -2113,6 +2113,9 @@ async function openGame(id) {
             h = await r2.text();
         }
         h = h.replace(/<div[^>]*id="sidebarad\d+"[^>]*>[\s\S]*?<\/div>/gi, "");
+        var gameUrl = resolveUrl(g.url);
+        var baseUrl = gameUrl.substring(0, gameUrl.lastIndexOf("/") + 1);
+        if (!h.includes("<base")) { h = h.replace("<head>", "<head><base href=\"" + baseUrl + "\">"); }
         f.contentDocument.open();
         f.contentDocument.write(h);
         f.contentDocument.close();
