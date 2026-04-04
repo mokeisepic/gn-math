@@ -64,6 +64,12 @@ jobs:
               'const schoolList = ["deledao", "goguardian", "lightspeed", "linewize", "securly", ".edu/", "eduplace.net", "motorsnag", "invoke.js"];'
           )
 
+          # Patch game HTML before writing to iframe to remove broken ad elements
+          html = html.replace(
+              'f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();',
+              'h = h.replace(/<div[^>]*id="sidebarad\\d+"[^>]*>[\\s\\S]*?<\\/div>/gi, "");\n        f.contentDocument.open();\n        f.contentDocument.write(h);\n        f.contentDocument.close();'
+          )
+
           with open("public/index.html", "w", encoding="utf-8") as f:
               f.write(html)
 
